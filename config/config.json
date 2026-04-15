@@ -1,0 +1,48 @@
+{
+  "common": {
+    "timeoutSec": 15,
+    "snapshotFolder": "./data/snapshots",
+    "caseSensitive": false,
+    "regexesForRemoval": [
+      {
+        "pattern": "(<script(.+|\n)+<\/script>)",
+        "replacement": "",
+        "multiline": true,
+        "description": "Remove all script tags and their content"
+      },
+      {
+        "pattern": "(<style(.+|\n)+<\/style>)",
+        "replacement": "",
+        "multiline": true,
+        "description": "Remove all style tags and their content"
+      },
+      {
+        "pattern": "<!--(.+|\n)+?-->",
+        "replacement": "",
+        "multiline": true,
+        "description": "Remove all HTML comments"
+      }
+    ]
+  },
+  "pages": [
+    {
+      "name": "Example",
+      "url": "https://example.com",
+      "keywords": [
+        "example",
+        "domain",
+        "illustrative"
+      ]
+    },
+    {
+      "name": "MySite",
+      "url": "https://mysite.com/status",
+      "keywords": [
+        "error",
+        "warning",
+        "maintenance"
+      ],
+      "timeoutSec": 5
+    }
+  ]
+}

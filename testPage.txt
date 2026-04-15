@@ -1,0 +1,57 @@
+</div>
+
+    </main>
+    <noindex>
+            <div class="blue-bar">
+                <div class="container">
+                    <a href="/contact-us/"><img class="pe-2" src="/Sources/Images/2024/core/contact_us.png"> Contact us with any questions</a>
+                </div>
+            </div>
+            <footer class="footer py-3 py-md-5">
+                <div class="container">
+                    <p class="d-flex d-md-block justify-content-center"><img src="/sources/images/2024/core/AB_Sig_AIT_White.png" alt="Government of Alberta Logo" /></p>
+                    <p class="desktop small mt-5">
+                        © 2007-2026 Government of Alberta&nbsp;&nbsp;|&nbsp;&nbsp;
+                        <a href="https://www.alberta.ca/privacystatement.aspx">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                        <a href="https://www.alberta.ca/accessibility.aspx">Accessibility</a>
+                        <span class="link-group">
+                            <a href="https://alberta.ca/" target="_blank">Government of Alberta Home</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <a href="https://www.alberta.ca/ministries.aspx" target="_blank">Ministries</a>
+                        </span>
+                    </p>
+                    <p class="mobile small mt-5">
+                        © 2007-2026 Government of Alberta<br />
+                        <span>
+                            <a href="https://www.alberta.ca/privacystatement.aspx">Privacy</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <a href="https://www.alberta.ca/accessibility.aspx">Accessibility</a>
+                        </span>
+                        <br />
+                        <span>
+                            <a href="https://alberta.ca/" target="_blank">Government of Alberta Home</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                            <a href="https://www.alberta.ca/ministries.aspx" target="_blank">Ministries</a>
+                        </span>
+                    </p>
+                </div>
+            </footer>
+    </noindex>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-36648066-1']);
+        var pluginUrl =
+            '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
+        _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
+
+        _gaq.push(['_trackPageview']);
+
+        (function () {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+
+    <script src="/scripts/2024/jquery.3.7.1.min.js"></script>
+    <script src="/scripts/2024/popper.min.js"></script>
+    <script src="/scripts/2024/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="/scripts/ddaccordion.js"></script>
+    <script language="javascript" type="text/javascript" src="/scripts/loaddiv.js"></script>
