@@ -4,23 +4,23 @@ function Import-Config {
         [Parameter(Mandatory=$false)]
         [string]$configPath
     )
-    Write-Output "Loading configuration..."
+    Write-Verbose "Loading configuration..."
     if ($configPath) {
-        Write-Output "Using provided configuration path: $configPath"
+        Write-Verbose "Using provided configuration path: $configPath"
     } else {
-        Write-Output "No configuration path provided. Using default path."
+        Write-Verbose "No configuration path provided. Using default path."
         $currentDir = Get-Location
         $configPath = Join-Path $currentDir "config\config.json"
     }
     if (-Not (Test-Path $configPath)) {
     throw "Configuration file not found at path: $configPath"
 } else {
-    Write-Output "Configuration file found."
+    Write-Verbose "Configuration file found."
 }
 try {
     $configContent = Get-Content -Path $configPath -Raw
     $config = $configContent | ConvertFrom-Json
-    Write-Output "Configuration loaded successfully."
+    Write-Verbose "Configuration loaded successfully."
     $global:Config = $config
 } catch {
     throw "Failed to load configuration: $_"

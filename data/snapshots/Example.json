@@ -1,0 +1,7 @@
+{
+  "Name": "Example",
+  "Url": "https://example.com",
+  "Content": "<!doctype html><html lang=\"en\"><head><title>Example Domain</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><div><h1>Example Domain</h1><p>This domain is for use in documentation examples without needing permission. Avoid use in operations.</p><p><a href=\"https://iana.org/domains/example\">Learn more</a></p></div></body></html>\n",
+  "Timestamp": "2026-04-15T19:59:55.3142018-06:00",
+  "Hash": "90EC8AED2C3F2404429D8D8EF4BC16CE50ADD40C7E98C3AE29540F8F34A8A8C0"
+}

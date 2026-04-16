@@ -1,31 +1,37 @@
-Import-Module ./modules/Config.psm1 -Verbose -Force
+Import-Module (Join-Path $PSScriptRoot 'Config.psm1') -Force
 
 # Fetches data from the specified URL and returns the response object.
 function Get-Data {
     param (
         [string]$Url
     )
-    Write-Output "Fetching data from $Url"
-    $Response = Invoke-WebRequest -Uri $Url
-    if ($Response.StatusCode -ne 200) {
-        throw "Failed to fetch data from $Url. Status code: $($Response.StatusCode)"
+    Write-Verbose "Fetching data from $Url"
+    $timeoutSec = if ($global:Config -and $global:Config.common -and $global:Config.common.timeoutSec) {
+        [int]$global:Config.common.timeoutSec
+    } else {
+        15
+    }
+
+    $response = Invoke-WebRequest -Uri $Url -TimeoutSec $timeoutSec -ErrorAction Stop
+    if ($response.StatusCode -ne 200) {
+        throw "Failed to fetch data from $Url. Status code: $($response.StatusCode)"
     }
     return $response
 }
 
 # Converts the response content to HTML format.
-function ConvertTo-Html {
+function Get-HtmlContent {
     param (
-        [Response]$Response
+        [object]$Response
     )
-    Write-Output "Converting response to HTML format"
-    $HtmlContent = $Response.Content
-    if (($null -ne $HtmlContent) -and ($HtmlContent -ne "")) {
-        return $HtmlContent
+    Write-Verbose "Converting response to HTML format"
+    $htmlContent = $Response.Content
+    if (-not [string]::IsNullOrWhiteSpace($htmlContent)) {
+        return $htmlContent
     }
-    else {
-        throw "Failed to convert response to HTML. Content is empty."
-    }
+
+    throw "Failed to convert response to HTML. Content is empty."
+
 }
 
 # Removes scripts, styles, and comments from the HTML content to clean it up.
@@ -33,47 +39,82 @@ function Remove-ExtraContent {
     param (
         [string]$HtmlContent
     )
-    $Regexes = $Config.common.regexesForRemoval
+    $regexes = $Config.common.regexesForRemoval
 
-    foreach ($Regex in $Regexes) {
-        $multilineOption = [System.Text.RegularExpressions.RegexOptions]::None
-        if($Regex.multiline) {
-            $multilineOption =[System.Text.RegularExpressions.RegexOptions]::Multiline
+    foreach ($regex in $regexes) {
+        $regexOptions = [System.Text.RegularExpressions.RegexOptions]::None
+        if ($regex.multiline) {
+            $regexOptions = $regexOptions -bor [System.Text.RegularExpressions.RegexOptions]::Multiline
         }
-        $HtmlContent = [regex]::Replace($HtmlContent, $Regex.pattern, $Regex.replacement, $multilineOption)
+        if ($regex.singleline) {
+            $regexOptions = $regexOptions -bor [System.Text.RegularExpressions.RegexOptions]::Singleline
+        }
+
+        # Protect against catastrophic regex backtracking on large pages.
+        $HtmlContent = [regex]::Replace(
+            $HtmlContent,
+            $regex.pattern,
+            $regex.replacement,
+            $regexOptions,
+            [TimeSpan]::FromSeconds(3)
+        )
     }
 
-    if (($null -ne $HtmlContent) -and ($HtmlContent -ne "")) {
+    if (-not [string]::IsNullOrWhiteSpace($HtmlContent)) {
         return $HtmlContent
     }
-    else {
-        throw "Failed to format HTML content. Content is empty after formatting."
-    }
+
+    throw "Failed to format HTML content. Content is empty after formatting."
+    
 
 }
 
-function  Invoke-Fetcher {
+function Invoke-FetchPage {
     param (
         [string]$Url
     )
 
-    $Response = Get-Data -Url $Url
-    $HtmlContent = ConvertTo-Html -Response $Response
-    $CleanedContent = Remove-ExtraContent -HtmlContent $HtmlContent
-    return $CleanedContent
+    $response = Get-Data -Url $Url
+    $htmlContent = Get-HtmlContent -Response $response
+    $cleanedContent = Remove-ExtraContent -HtmlContent $htmlContent
+    $name = $Url.Replace("https://", "").Replace("http://", "").Replace("/", "_").Replace(".", "_")
+    [FetchResult]::new($name, $Url, $cleanedContent)
 }
 
-function  Invoke-Fetcher {
+function Invoke-FetchAllPages {
+    $totalPages = @($Config.pages).Count
+    $index = 0
+
     $Config.pages | ForEach-Object {
-        $Url = $_.url
+        $index++
+        $url = $_.url
+        $name = $_.name
 
-    try {
-        $Response = Get-Data -Url $Url
-        $HtmlContent = ConvertTo-Html -Response $Response
-        $CleanedContent = Remove-ExtraContent -HtmlContent $HtmlContent
-        return $CleanedContent
-    } catch {
-        throw "An error occurred in Invoke-Fetcher: $_"
+        Write-Progress -Activity "Fetching pages" -Status "[$index/$totalPages] $name" -PercentComplete (($index / [math]::Max($totalPages, 1)) * 100)
+        Write-Host "Fetching [$index/$totalPages]: $name ($url)"
+
+        try {
+            $response = Get-Data -Url $url
+            $htmlContent = Get-HtmlContent -Response $response
+            $cleanedContent = Remove-ExtraContent -HtmlContent $htmlContent
+            [FetchResult]::new($name, $url, $cleanedContent)
+        }
+        catch {
+            throw "An error occurred in Invoke-FetchAllPages for '$name' ($url): $_"
+        }
     }
+
+    Write-Progress -Activity "Fetching pages" -Completed
 }
+
+class FetchResult {
+    [string]$Name
+    [string]$Url
+    [string]$Content
+
+    FetchResult([string]$Name, [string]$Url, [string]$Content) {
+        $this.Name = $Name
+        $this.Url = $Url
+        $this.Content = $Content
+    }
 }

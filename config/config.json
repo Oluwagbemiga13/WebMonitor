@@ -5,21 +5,24 @@
     "caseSensitive": false,
     "regexesForRemoval": [
       {
-        "pattern": "(<script(.+|\n)+<\/script>)",
+        "pattern": "<script\\b[^>]*>.*?<\\/script>",
         "replacement": "",
         "multiline": true,
+        "singleline": true,
         "description": "Remove all script tags and their content"
       },
       {
-        "pattern": "(<style(.+|\n)+<\/style>)",
+        "pattern": "<style\\b[^>]*>.*?<\\/style>",
         "replacement": "",
         "multiline": true,
+        "singleline": true,
         "description": "Remove all style tags and their content"
       },
       {
-        "pattern": "<!--(.+|\n)+?-->",
+        "pattern": "<!--.*?-->",
         "replacement": "",
         "multiline": true,
+        "singleline": true,
         "description": "Remove all HTML comments"
       }
     ]
@@ -33,16 +36,6 @@
         "domain",
         "illustrative"
       ]
-    },
-    {
-      "name": "MySite",
-      "url": "https://mysite.com/status",
-      "keywords": [
-        "error",
-        "warning",
-        "maintenance"
-      ],
-      "timeoutSec": 5
     }
   ]
 }
