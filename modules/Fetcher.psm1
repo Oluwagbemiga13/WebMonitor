@@ -1,4 +1,9 @@
-Import-Module (Join-Path $PSScriptRoot 'Config.psm1') -Force
+using module ./Config.psm1
+
+[CmdletBinding()]
+param()
+
+$script:config = Import-Config
 
 # Fetches data from the specified URL and returns the response object.
 function Get-Data {
@@ -6,8 +11,8 @@ function Get-Data {
         [string]$Url
     )
     Write-Verbose "Fetching data from $Url"
-    $timeoutSec = if ($global:Config -and $global:Config.common -and $global:Config.common.timeoutSec) {
-        [int]$global:Config.common.timeoutSec
+    $timeoutSec = if ($script:config -and $script:config.common -and $script:config.common.timeoutSec) {
+        [int]$script:config.common.timeoutSec
     } else {
         15
     }
@@ -39,7 +44,7 @@ function Remove-ExtraContent {
     param (
         [string]$HtmlContent
     )
-    $regexes = $Config.common.regexesForRemoval
+    $regexes = $script:config.common.regexesForRemoval
 
     foreach ($regex in $regexes) {
         $regexOptions = [System.Text.RegularExpressions.RegexOptions]::None
@@ -82,10 +87,10 @@ function Invoke-FetchPage {
 }
 
 function Invoke-FetchAllPages {
-    $totalPages = @($Config.pages).Count
+    $totalPages = @($script:config.pages).Count
     $index = 0
 
-    $Config.pages | ForEach-Object {
+    $script:config.pages | ForEach-Object {
         $index++
         $url = $_.url
         $name = $_.name

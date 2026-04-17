@@ -27,6 +27,11 @@
       }
     ]
   },
+  "logging": {
+    "level": "DEBUG",
+    "file": "./logs/webmonitor.log",
+    "console": true
+  },
   "pages": [
     {
       "name": "Example",

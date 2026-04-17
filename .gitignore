@@ -1,0 +1,8 @@
+# Ignore log directories
+logs/
+**/logs/
+
+# Ignore snapshot directories
+data/snapshots/
+**/snapshots/
+**/snapshot/

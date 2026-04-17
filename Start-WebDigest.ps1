@@ -1,20 +1,24 @@
 using module ./modules/Snapshot.psm1
 using module ./modules/Fetcher.psm1
 using module ./modules/Config.psm1
+using module ./modules/Logger.psm1
 
 [CmdletBinding()]
 param()
 
+$InformationPreference = 'Continue'
 
-# Import-Module (Join-Path $PSScriptRoot 'modules/Config.psm1') -Verbose:$isVerbose -Force
-# Import-Module (Join-Path $PSScriptRoot 'modules/Fetcher.psm1') -Verbose:$isVerbose -Force
-# Import-Module (Join-Path $PSScriptRoot 'modules/Snapshot.psm1') -Verbose:$isVerbose -Force
 
+Write-Warning "Configuration and modules are cached at the script level. If you make changes to the configuration or modules, you will need to restart the PowerShell session for the changes to take effect." 
+Write-Information "Loading configuration and initializing logger..."
+Write-Host "Loading configuration and initializing logger..." -ForegroundColor Cyan
+
+
+$script:config = Import-Config
 
 try {
     Write-Verbose "Loading configuration and listing pages..."
-    Import-Config
-    $Config.pages | ForEach-Object {
+    $script:config.pages | ForEach-Object {
         Write-Verbose "Page Name: $($_.name)"
         Write-Verbose "Page URL: $($_.url)"
     }
@@ -40,3 +44,8 @@ Invoke-FetchAllPages | ForEach-Object {
     $snapshot = [WebSnapshot]::new($_.Name, $_.Url, $_.Content)
     New-SnapshotFile -Snapshot $snapshot
 }
+
+Write-Log -Message "WebDigest script execution completed." -Level "INFO"
+Write-Log -Message "This is a debug message." -Level "DEBUG"
+Write-Log -Message "This is a warning message." -Level "WARN"
+Write-Log -Message "This is an error message." -Level "ERROR"
