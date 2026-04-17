@@ -1,3 +1,4 @@
+using module ./Logger.psm1
 
 class WebSnapshot {
    
@@ -29,5 +30,5 @@ function New-SnapshotFile {
     $fileName = "$($Snapshot.Name).json"
     $filePath = Join-Path (Get-Location) "data\snapshots\$fileName"
     $snapshot | ConvertTo-Json -Depth 2 | Out-File -FilePath $filePath -Encoding UTF8
-    Write-Verbose "Snapshot saved to: $filePath"
+    Write-Log -Message "Created snapshot file for $($Snapshot.Name) at $filePath" -Level "INFO"
 }

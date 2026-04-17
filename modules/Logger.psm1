@@ -1,7 +1,29 @@
-using module ./Config.psm1
+
 
 
 $InformationPreference = 'Continue'
+
+
+function Import-Config {
+    $currentDir = Get-Location
+    $configPath = Join-Path $currentDir "config\config.json"
+    if (-Not (Test-Path $configPath)) {
+        Write-Error "Configuration file not found at path: $configPath"
+        throw "Configuration file not found at path: $configPath"
+    }
+    try {
+        $configContent = Get-Content -Path $configPath -Raw
+        $config = $configContent | ConvertFrom-Json
+        Write-Verbose "Configuration loaded successfully."
+        return $config
+    }
+    catch {
+        Write-Error "Failed to load configuration: $_"
+        throw "Failed to load configuration: $_"
+    }
+    
+}
+
 $script:config = Import-Config
 
 class Logger {
@@ -24,12 +46,12 @@ class Log {
     Log([string]$Invoker, [string]$Level, [string]$Message) {
         $this.Invoker = $Invoker
         $this.Level = $Level
-        $this.Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
+        $this.Timestamp = Get-Date
         $this.Message = $Message    
     }
 
     [string] toMessage() {
-        return "$($this.Timestamp) [$($this.Level)] $($this.Invoker): $($this.Message)"
+        return "$($this.Timestamp.ToString('yyyy-MM-dd HH:mm:ss.fff')) [$($this.Level)] $($this.Invoker): $($this.Message)"
 
     }
 
@@ -101,8 +123,8 @@ function Write-Log {
     if ($script:config.logging.console) {  
         switch ($Level) {
             "DEBUG" { Write-ColoredInfo -Message $logLine -Color "White" }
-            "INFO"  { Write-ColoredInfo -Message $logLine -Color "White" }
-            "WARN"  { Write-ColoredInfo -Message $logLine -Color "Yellow" }
+            "INFO" { Write-ColoredInfo -Message $logLine -Color "White" }
+            "WARN" { Write-ColoredInfo -Message $logLine -Color "Yellow" }
             "ERROR" { Write-ColoredInfo -Message $logLine -Color "Red" }
         }
     }
