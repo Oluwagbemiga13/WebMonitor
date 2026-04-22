@@ -2,9 +2,11 @@
 
 WebMonitor is a PowerShell project for watching web pages.
 
-It reads a list of pages from `config/config.json`, fetches each page, cleans volatile HTML content (scripts, styles, comments), and compares results with saved snapshots.
+It reads a list of pages from `config/config.json`, fetches each page, cleans volatile HTML content (scripts, styles,
+comments), and compares results with saved snapshots.
 
 Goal:
+
 - Notify the user when page content changes.
 - Notify the user when configured keywords are found.
 
@@ -13,15 +15,16 @@ Goal:
 Main config file: `config/config.json`
 
 Key fields:
+
 - `common.timeoutSec`: default request timeout.
 - `common.snapshotFolder`: where snapshots are stored.
 - `common.caseSensitive`: keyword matching mode.
 - `common.regexesForRemoval`: regex cleanup rules applied before comparison.
 - `pages[]`: list of pages to monitor.
-	- `name`: page label.
-	- `url`: page address.
-	- `keywords`: words/phrases to detect.
-	- `timeoutSec` (optional): page-specific timeout override.
+    - `name`: page label.
+    - `url`: page address.
+    - `keywords`: words/phrases to detect.
+    - `timeoutSec` (optional): page-specific timeout override.
 
 ## Run
 
@@ -42,4 +45,5 @@ pwsh ./Start-WebDigest.ps1
 
 ## Status
 
-Current repository contains the core fetch/cleanup building blocks. Change detection and notification flow can be expanded from this base.
+Current repository contains the core fetch/cleanup building blocks. Change detection and notification flow can be
+expanded from this base.

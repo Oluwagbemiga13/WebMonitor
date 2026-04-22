@@ -2,6 +2,10 @@
 logs/
 **/logs/
 
+config/secret.json
+config/config.json
+
+
 # Ignore snapshot directories
 data/snapshots/
 **/snapshots/

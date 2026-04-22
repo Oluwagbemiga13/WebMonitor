@@ -3,6 +3,15 @@
     "timeoutSec": 15,
     "snapshotFolder": "./data/snapshots",
     "caseSensitive": false,
+    "email": {
+	"emailEnabled" "false",
+      	"smtp_server": "smtp.example.com",
+      	"port": 465,
+      	"use_ssl": true,
+      	"sender": "sender@example.com",
+      	"recipient": "recipient@example.com",
+      	"subject": "Web monitor alert"
+    },
     "regexesForRemoval": [
       {
         "pattern": "<script\\b[^>]*>.*?<\\/script>",
@@ -43,13 +52,12 @@
       ]
     },
     {
-      "name": "Apprentice_Services_Registration_Dates",
-      "url": "https://tradesecrets.alberta.ca/apprentice-services/classroom-instruction/how-to-register/registration-dates/",
+      "name": "Sample_Page",
+      "url": "https://example.org/sample",
       "keywords": [
-        "apprentice",
-        "services",
-        "registration",
-        "dates"
+        "keyword1",
+        "keyword2",
+        "keyword3"
       ]
     }
   ]
