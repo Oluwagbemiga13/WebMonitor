@@ -6,27 +6,24 @@ Import-Module Send-MailKitMessage -Force
 Import-Module Microsoft.PowerShell.Security -Force
 
 
-
-<# function Import-EmailConfig{
-	$currentPath = Get-Location
-	$emailConfigPath = Join-Path $currentPath "config\config.json"
-	
-	if (-Not (Test-Path $emailConfigPath)) {
-		Write-Log -Message "Configuration file not found at path: $($emailConfigPath)" -Level "ERROR"
-		throw "Email configuration file not found at path: $($emailConfigPath)"
-    }    
-	else {
-        Write-Log -Message "Email configuration found." -Level "INFO"
-    }
-	
-	$emailConfig = Import-Config -ConfigPath $emailConfigPath
-	Write-Log -Message "Email configuration imported" -Level "INFO"
-	return $emailConfig
-} #>
-
 function New-EmailCredentials
 {
-    $Credentials = ImportCredentials
+    <#
+    .SYNOPSIS
+    Builds SMTP credentials from stored secrets and configuration.
+
+    .DESCRIPTION
+    Imports encrypted credentials and application configuration, validates that
+    the configured sender email matches the stored secret username, then returns
+    a PSCredential used for SMTP authentication.
+
+    .OUTPUTS
+    System.Management.Automation.PSCredential
+
+    .EXAMPLE
+    $cred = New-EmailCredentials
+    #>
+    $Credentials = Import-Credentials
     $EmailConfig = Import-Config
 
     $secretEmail = ConvertFrom-SecureString $Credentials.Username -AsPlainText
@@ -57,6 +54,37 @@ function New-EmailCredentials
 
 function Send-Email
 {
+    <#
+    .SYNOPSIS
+    Sends a notification email using configured SMTP settings.
+
+    .DESCRIPTION
+    Sends an email via MailKit based on config.common.email settings.
+    If -Credential is not provided, one is created via New-EmailCredentials.
+    If -Recipient or -Subject are omitted, defaults from configuration are used.
+    When emailEnabled is false in config, the email is not sent but logged as a preview.
+
+    .PARAMETER Message
+    The email body text.
+
+    .PARAMETER Credential
+    Optional SMTP credential. If omitted, credentials are loaded automatically.
+
+    .PARAMETER Recipient
+    Optional recipient email address. Defaults to the configured recipient.
+
+    .PARAMETER Subject
+    Optional email subject line. Defaults to "Web monitor found something".
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    Send-Email -Message "Keyword detected on monitored page."
+
+    .EXAMPLE
+    Send-Email -Message "Change detected." -Recipient "ops@example.com" -Subject "WebMonitor Alert"
+    #>
     param(
         [Parameter(Mandatory = $true)]
         [string]$Message,

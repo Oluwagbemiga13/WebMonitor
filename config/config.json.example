@@ -4,7 +4,7 @@
     "snapshotFolder": "./data/snapshots",
     "caseSensitive": false,
     "email": {
-	"emailEnabled" "false",
+	    "emailEnabled" "false",
       	"smtp_server": "smtp.example.com",
       	"port": 465,
       	"use_ssl": true,

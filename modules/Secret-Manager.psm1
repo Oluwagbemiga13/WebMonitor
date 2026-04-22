@@ -1,7 +1,31 @@
 using module ./Logger.psm1
 
-function Store-EncryptedCredentials
+function Export-EncryptedCredentials
 {
+    <#
+    .SYNOPSIS
+    Saves encrypted credentials to a JSON secret file.
+
+    .DESCRIPTION
+    Serializes a SecureCredentials object using ConvertFrom-SecureString and
+    writes the result to the configured secret file path. Creates the file if
+    it does not already exist.
+
+    .PARAMETER SecureCredentials
+    A SecureCredentials object containing the username and password to encrypt.
+
+    .PARAMETER RelativeFilePath
+    Relative path to the secret file. Defaults to config/secret.json.
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    Export-EncryptedCredentials -SecureCredentials $creds
+
+    .EXAMPLE
+    Export-EncryptedCredentials -SecureCredentials $creds -RelativeFilePath "config/my-secret.json"
+    #>
     param (
         [Parameter(Mandatory = $true)]
         $SecureCredentials,
@@ -43,6 +67,20 @@ function Store-EncryptedCredentials
 
 function Get-CredentialFromInput
 {
+    <#
+    .SYNOPSIS
+    Prompts interactively for email credentials.
+
+    .DESCRIPTION
+    Reads an email address and password from the console and returns a
+    SecureCredentials object with both values stored as SecureStrings.
+
+    .OUTPUTS
+    SecureCredentials
+
+    .EXAMPLE
+    $creds = Get-CredentialFromInput
+    #>
 
     $username = Read-Host "Enter your email address: "
     $SecuredUsername = ConvertTo-SecureString $username -AsPlainText -Force
@@ -50,8 +88,32 @@ function Get-CredentialFromInput
     return [SecureCredentials]::new($SecuredUsername, $password)
 }
 
-function ImportCredentials
+function Import-Credentials
 {
+    <#
+    .SYNOPSIS
+    Loads encrypted credentials from disk, or creates new ones interactively.
+
+    .DESCRIPTION
+    Reads credentials from the secret file and converts values back to
+    SecureStrings. Use -New to force prompting for fresh credentials
+    and overwrite the existing secret file.
+
+    .PARAMETER RelativeFilePath
+    Relative path to the secret file. Defaults to config/secret.json.
+
+    .PARAMETER New
+    Forces creation of new credentials via interactive prompt.
+
+    .OUTPUTS
+    SecureCredentials
+
+    .EXAMPLE
+    $creds = Import-Credentials
+
+    .EXAMPLE
+    $creds = Import-Credentials -New
+    #>
     param(
         [Parameter(Mandatory = $false)]
         $RelativeFilePath = "config/secret.json",
@@ -65,7 +127,7 @@ function ImportCredentials
     if (($New) -or (-not (Test-Path $RelativeFilePath)))
     {
         $credentials = Get-CredentialFromInput
-        Store-EncryptedCredentials -SecureCredentials $Credentials
+        Export-EncryptedCredentials -SecureCredentials $Credentials
         return $credentials
     }
 

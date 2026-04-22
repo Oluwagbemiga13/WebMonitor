@@ -1,5 +1,6 @@
 using module ./Logger.psm1
 
+# Represents a single fetched page snapshot, including its content and SHA-256 hash.
 class WebSnapshot
 {
 
@@ -29,6 +30,25 @@ class WebSnapshot
 
 function New-SnapshotFile
 {
+    <#
+    .SYNOPSIS
+    Persists a WebSnapshot to disk as a JSON file.
+
+    .DESCRIPTION
+    Serializes the provided WebSnapshot and writes it to
+    data\snapshots\<Name>.json under the current working directory.
+    Creates or overwrites the file and logs the operation.
+
+    .PARAMETER Snapshot
+    The WebSnapshot instance to serialize and save.
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    $snap = [WebSnapshot]::new("ExamplePage", "https://example.com", "<html>...</html>")
+    New-SnapshotFile -Snapshot $snap
+    #>
     param (
         [WebSnapshot]$Snapshot
     )

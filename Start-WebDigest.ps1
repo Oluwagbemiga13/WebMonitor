@@ -46,9 +46,9 @@ Write-Error "An error occurred: $_"
 
 <# 	$credentials = Get-CredentialFromInput
 	
-	Store-EncryptedCredentials -SecureCredentials $credentials
+	Export-EncryptedCredentials -SecureCredentials $credentials
 	
-	$importedCredentials = ImportCredentials  #>
+	$importedCredentials = Import-Credentials  #>
 
 Send-Email -Message "Test message"
 	

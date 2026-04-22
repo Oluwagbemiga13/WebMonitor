@@ -5,6 +5,23 @@ $script:config = Import-Config
 
 # Fetches data from the specified URL and returns the response object.
 function Get-Data {
+    <#
+    .SYNOPSIS
+    Retrieves the HTTP response from a URL.
+
+    .DESCRIPTION
+    Performs an HTTP GET request using Invoke-WebRequest with a configurable
+    timeout (common.timeoutSec). Throws if the status code is not 200.
+
+    .PARAMETER Url
+    The URL to request.
+
+    .OUTPUTS
+    Microsoft.PowerShell.Commands.BasicHtmlWebResponseObject
+
+    .EXAMPLE
+    $response = Get-Data -Url "https://example.com"
+    #>
 param (
 [string]$Url
 )
@@ -25,6 +42,19 @@ return $response
 
 # Converts the response content to HTML format.
 function Get-HtmlContent {
+    <#
+    .SYNOPSIS
+    Extracts the raw HTML/text content from a web response.
+
+    .PARAMETER Response
+    The response object returned by Get-Data or Invoke-WebRequest.
+
+    .OUTPUTS
+    System.String
+
+    .EXAMPLE
+    $html = Get-HtmlContent -Response $response
+    #>
 param (
 [object]$Response
 )
@@ -40,6 +70,23 @@ throw "Failed to convert response to HTML. Content is empty."
 
 # Removes scripts, styles, and comments from the HTML content to clean it up.
 function Remove-ExtraContent {
+    <#
+    .SYNOPSIS
+    Cleans fetched content using configured regex replacements.
+
+    .DESCRIPTION
+    Applies each entry in common.regexesForRemoval to strip noise such as
+    scripts, styles, and comments before keyword matching or hashing.
+
+    .PARAMETER HtmlContent
+    Raw page content to clean.
+
+    .OUTPUTS
+    System.String
+
+    .EXAMPLE
+    $clean = Remove-ExtraContent -HtmlContent $html
+    #>
 param (
 [string]$HtmlContent
 )
@@ -76,6 +123,23 @@ throw "Failed to format HTML content. Content is empty after formatting."
 }
 
 function Invoke-FetchPage {
+    <#
+    .SYNOPSIS
+    Fetches and cleans a single page by URL.
+
+    .DESCRIPTION
+    Executes the full fetch pipeline (Get-Data, Get-HtmlContent,
+    Remove-ExtraContent) and returns a FetchResult.
+
+    .PARAMETER Url
+    URL of the page to fetch.
+
+    .OUTPUTS
+    FetchResult
+
+    .EXAMPLE
+    $page = Invoke-FetchPage -Url "https://example.com/status"
+    #>
 param (
 [string]$Url
 )
@@ -89,6 +153,20 @@ Write-Log -Message "Fetched and cleaned content from $Url" -Level "INFO"
 }
 
 function Invoke-FetchAllPages {
+    <#
+    .SYNOPSIS
+    Fetches and cleans all pages defined in configuration.
+
+    .DESCRIPTION
+    Iterates over config.pages, reports progress, and returns one
+    FetchResult per configured page. Throws on fetch failure.
+
+    .OUTPUTS
+    FetchResult[]
+
+    .EXAMPLE
+    $results = Invoke-FetchAllPages
+    #>
 $totalPages = @($script:config.pages).Count
 $index = 0
 

@@ -7,15 +7,24 @@ $script:config = Import-Config
 
 function Compare-Hash
 {
-    <# 
-.SYNOPSIS
-Compares the hash of the current snapshot with the existing snapshot to determine if there has been a content change.
+    <#
+    .SYNOPSIS
+    Compares the current snapshot hash against the stored snapshot hash.
 
-.DESCRIPTION
-If there is a change, it updates the snapshot file with the new content and hash.
-Returns $true if there is no change, and $false if there is a change.
-Returns $true if this is the first snapshot (no existing snapshot file), and creates the snapshot file.
-#>
+    .DESCRIPTION
+    If no prior snapshot exists, creates one and returns $true (first run).
+    If the hash has changed, updates the snapshot file and returns $false.
+    If the hash is unchanged, returns $true.
+
+    .PARAMETER Snapshot
+    The current WebSnapshot to evaluate.
+
+    .OUTPUTS
+    System.Boolean
+
+    .EXAMPLE
+    $unchanged = Compare-Hash -Snapshot $snapshot
+    #>
     param (
         [WebSnapshot]$Snapshot
     )
@@ -44,6 +53,23 @@ Returns $true if this is the first snapshot (no existing snapshot file), and cre
 
 function Find-KeyWords
 {
+    <#
+    .SYNOPSIS
+    Searches a snapshot's content for configured keywords.
+
+    .DESCRIPTION
+    Resolves the page-specific keyword list from configuration by snapshot name
+    and returns all keywords that match within the snapshot content.
+
+    .PARAMETER Snapshot
+    The WebSnapshot whose content should be scanned.
+
+    .OUTPUTS
+    System.String[]
+
+    .EXAMPLE
+    $found = Find-KeyWords -Snapshot $snapshot
+    #>
     param (
         [WebSnapshot]$Snapshot
     )

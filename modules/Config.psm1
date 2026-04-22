@@ -2,6 +2,27 @@ using module ./Logger.psm1
 
 function Import-Config
 {
+    <#
+    .SYNOPSIS
+    Loads application configuration from a JSON file.
+
+    .DESCRIPTION
+    Reads and deserializes the WebMonitor configuration file.
+    If -ConfigPath is not provided, defaults to config\config.json
+    under the current working directory.
+
+    .PARAMETER ConfigPath
+    Optional path to a configuration JSON file.
+
+    .OUTPUTS
+    PSCustomObject
+
+    .EXAMPLE
+    Import-Config
+
+    .EXAMPLE
+    Import-Config -ConfigPath "C:\WebMonitor\config\config.json"
+    #>
     param (
         [Parameter(Mandatory = $false)]
         [string]$ConfigPath
@@ -22,11 +43,11 @@ function Import-Config
     if (-Not (Test-Path $ConfigPath))
     {
         Write-Log -Message "Configuration file not found at path: $ConfigPath" -Level "ERROR"
-        throw "Configuration file not found at path: $ConfigPath"
+        throw "Configuration file not found at path: $ConfigPath" 
     }
     else
     {
-        Write-Log -Message "Configuration file found." -Level "INFO"
+        Write-Log -Message "Configuration file found." -Level "DEBUG"
     }
     try
     {

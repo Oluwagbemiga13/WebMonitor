@@ -3,6 +3,20 @@ $InformationPreference = 'Continue'
 
 function Get-LoggerConfig
 {
+    <#
+    .SYNOPSIS
+    Loads logger settings from the application configuration file.
+
+    .DESCRIPTION
+    Reads config\config.json from the current working directory and returns
+    the deserialized object consumed by the logging subsystem.
+
+    .OUTPUTS
+    PSCustomObject
+
+    .EXAMPLE
+    $cfg = Get-LoggerConfig
+    #>
     $currentDir = Get-Location
     $configPath = Join-Path $currentDir "config\config.json"
     if (-Not (Test-Path $configPath))
@@ -78,6 +92,26 @@ class Log
 
 function New-Logger
 {
+    <#
+    .SYNOPSIS
+    Initializes the module-level logger instance.
+
+    .DESCRIPTION
+    Creates a Logger object and ensures the configured log file exists on disk.
+    Called automatically by Write-Log when no logger has been initialized yet.
+
+    .PARAMETER LogLevel
+    Minimum severity level to record. One of: DEBUG, INFO, WARN, ERROR.
+
+    .PARAMETER LogFile
+    Path to the log file. Defaults to the value in config.logging.file.
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    New-Logger -LogLevel INFO -LogFile ".\logs\webmonitor.log"
+    #>
     [CmdletBinding()]
     param (
         [ValidateSet("DEBUG", "INFO", "WARN", "ERROR")]
@@ -103,6 +137,31 @@ function Write-ColoredInfo
 
 function Write-Log
 {
+    <#
+    .SYNOPSIS
+    Writes a structured log entry to file and optionally to the console.
+
+    .DESCRIPTION
+    Creates a timestamped log record, filters by the configured minimum level,
+    appends to the log file, and writes color-coded console output when
+    config.logging.console is enabled. Initializes the logger automatically
+    if it has not been set up yet.
+
+    .PARAMETER Message
+    The log message text.
+
+    .PARAMETER Level
+    Severity level of the entry. One of: DEBUG, INFO, WARN, ERROR. Defaults to INFO.
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    Write-Log -Message "Fetching complete." -Level INFO
+
+    .EXAMPLE
+    Write-Log -Message "Unexpected response code." -Level WARN
+    #>
     param (
         [string]$Message,
         [ValidateSet("DEBUG", "INFO", "WARN", "ERROR")]
