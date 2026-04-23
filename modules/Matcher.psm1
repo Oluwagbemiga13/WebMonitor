@@ -73,7 +73,7 @@ function Find-KeyWords
     param (
         [WebSnapshot]$Snapshot
     )
-    $pages = $script:config.pages
+    $pages = $script:config.fetcher.pages
     $pageConfig = $pages | Where-Object { $_.name -eq $Snapshot.Name }
     if (-not $pageConfig)
     {
@@ -82,19 +82,27 @@ function Find-KeyWords
     }
 
     $keyWords = $pageConfig.keywords
+    $caseSensitive = [System.Convert]::ToBoolean($script:config.matcher.caseSensitive)
 
     $foundKeywords = @()
     foreach ($keyWord in $keyWords)
     {
         Write-Log -Message "Looking for keyword : $( $keyWord )" -Level "DEBUG"
-        if ($Snapshot.Content -match ([regex]::Escape($keyWord)))
-        {
+
+        $pattern = [regex]::Escape($keyWord)
+
+        $found = if ($caseSensitive) {
+            $Snapshot.Content -cmatch $pattern
+        } else {
+            $Snapshot.Content -imatch $pattern
+        }
+
+        if ($found) {
             Write-Log -Message "Found : $( $keyWord )" -Level "DEBUG"
             $foundKeywords += $keyWord
             Write-Log -Message "foundKeywords content : $( $foundKeywords )" -Level "DEBUG"
         }
-        else
-        {
+        else {
             Write-Log -Message "$( $keyWord ) not found." -Level "DEBUG"
         }
     }

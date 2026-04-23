@@ -1,7 +1,8 @@
 using module ./Config.psm1
 using module ./Logger.psm1
 
-$script:config = Import-Config
+$script:config = (Import-Config).fetcher
+
 
 # Fetches data from the specified URL and returns the response object.
 function Get-Data {
@@ -11,7 +12,7 @@ function Get-Data {
 
     .DESCRIPTION
     Performs an HTTP GET request using Invoke-WebRequest with a configurable
-    timeout (common.timeoutSec). Throws if the status code is not 200.
+    timeout (.timeoutSec). Throws if the status code is not 200.
 
     .PARAMETER Url
     The URL to request.
@@ -25,9 +26,8 @@ function Get-Data {
 param (
 [string]$Url
 )
-Write-Log -Message "Fetching data from $Url" -Level "INFO"
-$timeoutSec = if ($script:config -and $script:config.common -and $script:config.common.timeoutSec) {
-[int]$script:config.common.timeoutSec
+$timeoutSec = if ($script:config.timeoutSec) {
+[int]$script:config.timeoutSec
 } else {
 15
 }
@@ -75,7 +75,7 @@ function Remove-ExtraContent {
     Cleans fetched content using configured regex replacements.
 
     .DESCRIPTION
-    Applies each entry in common.regexesForRemoval to strip noise such as
+    Applies each entry in .regexesForRemoval to strip noise such as
     scripts, styles, and comments before keyword matching or hashing.
 
     .PARAMETER HtmlContent
@@ -90,7 +90,7 @@ function Remove-ExtraContent {
 param (
 [string]$HtmlContent
 )
-$regexes = $script:config.common.regexesForRemoval
+$regexes = $script:config.regexesForRemoval
 
 foreach ($regex in $regexes) {
 $regexOptions = [System.Text.RegularExpressions.RegexOptions]::None
@@ -129,7 +129,10 @@ function Invoke-FetchPage {
 
     .DESCRIPTION
     Executes the full fetch pipeline (Get-Data, Get-HtmlContent,
-    Remove-ExtraContent) and returns a FetchResult.
+    Remove-ExtraContent) and returns a FetchResult. The page name is
+    derived from the URL by stripping the scheme and replacing slashes
+    and dots with underscores. To use a name from configuration, use
+    Invoke-FetchAllPages instead.
 
     .PARAMETER Url
     URL of the page to fetch.
@@ -193,6 +196,7 @@ throw "An error occurred in Invoke-FetchAllPages for '$name' ($url): $_"
 Write-Progress -Activity "Fetching pages" -Completed
 }
 
+# Represents the result of a single page fetch, containing the page name, source URL, and cleaned content.
 class FetchResult {
 [string]$Name
 [string]$Url

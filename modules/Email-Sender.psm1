@@ -2,6 +2,13 @@ using module ./Config.psm1
 using module ./Logger.psm1
 using module ./Secret-Manager.psm1
 
+if (Get-Module -ListAvailable -Name "Send-MailKitMessage") {
+    Write-Log -Message "Send-MailKitMessage module is installed." -Level "DEBUG"
+} else {
+	Write-Log -Message "Module is not installed." -Level "ERROR"
+	Install-Module -Name "Send-MailKitMessage"
+}
+
 Import-Module Send-MailKitMessage -Force
 Import-Module Microsoft.PowerShell.Security -Force
 
@@ -27,7 +34,7 @@ function New-EmailCredentials
     $EmailConfig = Import-Config
 
     $secretEmail = ConvertFrom-SecureString $Credentials.Username -AsPlainText
-    $userEmail = $EmailConfig.common.email.sender
+    $userEmail = $EmailConfig.email.sender
     if ( [string]::IsNullOrEmpty($secretEmail))
     {
         Write-Log -Message "Username from secret is null or empty" -Level "ERROR"
@@ -59,12 +66,12 @@ function Send-Email
     Sends a notification email using configured SMTP settings.
 
     .DESCRIPTION
-    Sends an email via MailKit based on config.common.email settings.
+    Sends an email via MailKit based on config.email settings.
     If -Credential is not provided, one is created via New-EmailCredentials.
     If -Recipient or -Subject are omitted, defaults from configuration are used.
     When emailEnabled is false in config, the email is not sent but logged as a preview.
 
-    .PARAMETER Message
+    .PARAMETER HtmlBody
     The email body text.
 
     .PARAMETER Credential
@@ -80,14 +87,14 @@ function Send-Email
     None
 
     .EXAMPLE
-    Send-Email -Message "Keyword detected on monitored page."
+    Send-Email -HtmlBody "<p> Keyword detected on monitored page.</p>"
 
     .EXAMPLE
-    Send-Email -Message "Change detected." -Recipient "ops@example.com" -Subject "WebMonitor Alert"
+    Send-Email -HtmlBody "<p>Change detected.</p>" -Recipient "ops@example.com" -Subject "WebMonitor Alert"
     #>
     param(
         [Parameter(Mandatory = $true)]
-        [string]$Message,
+        [string]$HtmlBody,
 
         [Parameter(Mandatory = $false)]
         [PSCredential]$Credential,
@@ -107,7 +114,7 @@ function Send-Email
 
     $config = Import-Config
 
-    $emailConfig = $config.common.email
+    $emailConfig = $config.email
 
     if (-not $Recipient)
     {
@@ -132,16 +139,126 @@ function Send-Email
 		-From $emailConfig.sender `
 		-RecipientList $RecipientList `
 		-Subject $Subject `
-		-TextBody $Message `
+		-HtmlBody $HtmlBody `
 		-Credential $Credential `
 		
-		Write-Log -Message "Email was sent with subject : $( $Subject ), content : $( $Message ) , sender : $( $emailConfig.sender )" -Level "DEBUG"
+		Write-Log -Message "Email was sent with subject : $( $Subject ), content : $( $HtmlBody ) , sender : $( $emailConfig.sender )" -Level "DEBUG"
         Write-Log -Message "Email to $( $Recipient ) sent" -Level "INFO"
     }
     else
     {
         Write-Log -Message "Sending email is not enabled. Check your config file." -Level "WARN"
-        Write-Log -Message "Email would look like this.`n Subject : $( $Subject )`n Sender : $( $emailConfig.sender ) `n Content : $( $Message )" -Level "WARN"
+        Write-Log -Message "Email would look like this.`n Subject : $( $Subject )`n Sender : $( $emailConfig.sender ) `n Content : $( $HtmlBody )" -Level "WARN"
     }
+}
 
+function New-EmailHtmlBody {
+	<#
+	.SYNOPSIS
+	Builds an HTML-formatted email body for a change-detection alert.
+
+	.DESCRIPTION
+	Generates a styled HTML email body containing the page name, URL,
+	detection timestamp, and a list of matched keywords. Intended to be
+	passed directly to Send-Email as the HtmlBody parameter.
+
+	.PARAMETER Snapshot
+	The WebSnapshot that triggered the alert. Provides the page name, URL,
+	and detection timestamp.
+
+	.PARAMETER KeyWords
+	An array of keywords that were matched within the snapshot content.
+
+	.OUTPUTS
+	System.String
+
+	.EXAMPLE
+	$html = New-EmailHtmlBody -Snapshot $snapshot -KeyWords @("registration", "open")
+	#>
+	param(
+		[Parameter(Mandatory=$true)]
+		[WebSnapshot]$Snapshot,
+		
+		[Parameter(Mandatory=$true)]
+		[string[]]$KeyWords
+	)
+
+	$pageName  = $Snapshot.Name
+	$url       = $Snapshot.Url
+	$timestamp = $Snapshot.Timestamp
+
+	# Normalize / format keywords
+	$keywordsHtml = if ($KeyWords -and $KeyWords.Count -gt 0) {
+		($KeyWords | Sort-Object -Unique | ForEach-Object {
+			"<li>$_</li>"
+		}) -join "`n"
+	}
+	else {
+		"<li>No specific keywords provided</li>"
+	}
+
+	$message = @"
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.5;
+        }
+        .container {
+            padding: 16px;
+        }
+        .header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-top: 12px;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .keywords {
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Web Monitor Alert</div>
+
+        <div class="section">
+            A change has been detected on the monitored page.
+        </div>
+
+        <div class="section">
+            <span class="label">Page:</span> $pageName<br/>
+            <span class="label">URL:</span> <a href="$url">$url</a><br/>
+            <span class="label">Detected at:</span> $timestamp
+        </div>
+
+        <div class="section">
+            <span class="label">Matched Keywords:</span>
+            <ul class="keywords">
+                $keywordsHtml
+            </ul>
+        </div>
+
+        <div class="footer">
+            This notification was generated automatically by your Web Monitor service.
+        </div>
+    </div>
+</body>
+</html>
+"@
+
+	return $message
 }

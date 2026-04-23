@@ -1,5 +1,8 @@
 $InformationPreference = 'Continue'
 
+if ($PSVersionTable.PSVersion.Major -ne 7) {
+    throw "This script requires PowerShell 7.x. Current version: $($PSVersionTable.PSVersion)"
+}
 
 function Get-LoggerConfig
 {
@@ -41,6 +44,7 @@ function Get-LoggerConfig
 
 $script:config = Get-LoggerConfig
 
+# Holds the active logger configuration, including the minimum log level and the target log file path.
 class Logger
 {
     [string]$LogLevel
@@ -54,6 +58,8 @@ class Logger
 
 }
 
+# Represents a single structured log entry, including the invoker, severity level, timestamp, and message.
+# Provides serialization to a formatted log line and deserialization from one via the static fromMessage method.
 class Log
 {
     [string]$Invoker
@@ -130,6 +136,27 @@ function New-Logger
 
 function Write-ColoredInfo
 {
+    <#
+    .SYNOPSIS
+    Writes a colored message to the information stream.
+
+    .DESCRIPTION
+    Outputs a message to the PowerShell information stream using ANSI color
+    codes. Used internally by Write-Log to produce color-coded console output.
+
+    .PARAMETER Message
+    The text to display.
+
+    .PARAMETER Color
+    The ANSI foreground color to apply. Defaults to Cyan.
+    Accepts any color name supported by $PSStyle.Foreground.
+
+    .OUTPUTS
+    None
+
+    .EXAMPLE
+    Write-ColoredInfo -Message "Operation complete." -Color "Green"
+    #>
     param([string]$Message, [string]$Color = "Cyan")
     $ansiColor = $PSStyle.Foreground.$Color
     Write-Information "$ansiColor$Message$( $PSStyle.Reset )" -InformationAction Continue

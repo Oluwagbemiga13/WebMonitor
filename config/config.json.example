@@ -1,17 +1,37 @@
 {
-  "common": {
-    "timeoutSec": 15,
-    "snapshotFolder": "./data/snapshots",
-    "caseSensitive": false,
-    "email": {
-	    "emailEnabled" "false",
-      	"smtp_server": "smtp.example.com",
-      	"port": 465,
-      	"use_ssl": true,
-      	"sender": "sender@example.com",
-      	"recipient": "recipient@example.com",
-      	"subject": "Web monitor alert"
-    },
+  "fetcher": {
+    "timeoutSec": 20,
+    "pages": [
+      {
+        "name": "Example",
+        "url": "https://example.com",
+        "keywords": [
+          "example",
+          "domain",
+          "illustrative"
+        ]
+      },
+      {
+        "name": "BBC News",
+        "url": "https://www.bbc.com/news",
+        "keywords": [
+          "breaking",
+          "world",
+          "politics",
+          "economy"
+        ]
+      },
+      {
+        "name": "Hacker News",
+        "url": "https://news.ycombinator.com",
+        "keywords": [
+          "startup",
+          "AI",
+          "programming",
+          "security"
+        ]
+      }
+    ],
     "regexesForRemoval": [
       {
         "pattern": "<script\\b[^>]*>.*?<\\/script>",
@@ -36,29 +56,26 @@
       }
     ]
   },
+  "matcher": {
+    "caseSensitive": false
+  },
+  "scheduler": {
+    "notifyOnHashChange": true,
+    "checkIntervalSec": 30,
+    "startTime": "08:00",
+    "endTime": "22:00"
+  },
+  "email": {
+    "emailEnabled": false,
+    "smtp_server": "smtp.gmail.com",
+    "port": 465,
+    "sender": "monitor@yourdomain.com",
+    "recipient": "alerts@yourdomain.com",
+    "subject": "Web Monitor Alert"
+  },
   "logging": {
-    "level": "DEBUG",
+    "level": "INFO",
     "file": "./logs/webmonitor.log",
     "console": true
-  },
-  "pages": [
-    {
-      "name": "Example",
-      "url": "https://example.com",
-      "keywords": [
-        "example",
-        "domain",
-        "illustrative"
-      ]
-    },
-    {
-      "name": "Sample_Page",
-      "url": "https://example.org/sample",
-      "keywords": [
-        "keyword1",
-        "keyword2",
-        "keyword3"
-      ]
-    }
-  ]
+  }
 }

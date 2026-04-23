@@ -27,7 +27,7 @@ function Import-Config
         [Parameter(Mandatory = $false)]
         [string]$ConfigPath
     )
-    Write-Log -Message "Loading configuration..." -Level "INFO"
+    Write-Log -Message "Loading configuration.." -Level "INFO"
 
     if ($ConfigPath)
     {
